@@ -11,7 +11,7 @@
 - [ ] 0.1 제품 기획서 확정 (`docs/01_PRD.md`)
 - [ ] 0.2 아키텍처 및 기술 스택 결정 (`docs/02_ADR.md`)
 - [ ] 0.3 초기 핵심 기능 TRD 작성 (`docs/03_TRD.md`)
-- [ ] 0.4 UI/UX 디자인 시스템 확인 (`docs/04_UI_GUIDE.md`)
+- [ ] 0.4 UI/UX 디자인 시스템 확인 (`docs/04_UI_GUIDE.md` — 기본값: Amazon-inspired, ADR-006)
 
 ---
 
