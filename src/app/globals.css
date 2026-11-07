@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --nav-primary: #131921;
+    --nav-secondary: #232F3E;
+    --bg-page: #EAEDED;
+    --bg-surface: #FFFFFF;
+    --text-primary: #0F1111;
+    --text-secondary: #565959;
+    --brand-orange: #FF9900;
+    --action-primary: #FFD814;
+    --action-primary-hover: #F7CA00;
+    --action-urgent: #FFA41C;
+    --border-subtle: #D5D9D9;
+    --border-default: #888C8C;
+  }
+}
+
+/* 모바일 탭 지연 방지 및 풀스크린 뷰포트 제어 */
+html, body {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}

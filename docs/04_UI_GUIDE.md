@@ -248,32 +248,105 @@ Neutral:  bg-bg-subtle text-secondary border border-subtle rounded-sm px-1.5 py-
 
 ---
 
-## 레이아웃
+## 현장 특화 반응형 레이아웃 및 브레이크포인트 (Phone & Tablet)
 
-| 항목 | 값 | 설명 |
-|------|-----|------|
-| 최대 너비 | `max-w-[1500px]` | 콘텐츠 최대 너비 (헤더는 전체 폭) |
-| 기본 정렬 | 좌측 정렬 | 중앙 정렬은 모달/빈 상태(Empty State)에서만 |
-| 그리드 갭 | `gap-5` (`20px`) | 홈/목록 카드 그리드 |
-| 섹션 간격 | `space-y-5` ~ `space-y-8` | 페이지 내 섹션 구분 |
-| 상세 페이지 | 3단 구성: 이미지(좌) / 정보(중) / 구매 박스(우, sticky) | 결정·실행 영역은 항상 우측 고정 |
-| 사이드바 | `w-60` 필터 패널 (목록 페이지 좌측) | 체크박스·링크 기반 필터 |
+본 시스템은 **스마트폰(Phone) 및 태블릿(Tablet)** 환경에 완벽히 최적화된 **Mobile/Tablet-First 반응형 레이아웃**을 채택한다. (근거: [ADR-006](02_ADR.md#adr-006-phone--tablet-적응형-반응형-ui-아키텍처-adaptive-master-detail--bottom-sheet))
+
+### 브레이크포인트 기준
+| 브레이크포인트 | 너비 | 주 대상 기기 | 핵심 레이아웃 형태 |
+|--------------|-----|------------|------------------|
+| **Phone** (`base` ~ `sm`) | `< 768px` | iPhone, Galaxy 등 스마트폰 | **단일 열 (1-Column)** + 하단 엄지손가락 영역 컨트롤러 |
+| **Tablet** (`md` ~ `xl`) | `≥ 768px` | iPad, Galaxy Tab (768px ~ 1280px) | **2단 분할 (Split-View: Master-Detail)** |
+| **Desktop/Wide** (`2xl`) | `≥ 1280px` | 사무실 PC / 와이드 모니터 | 고밀도 데이터 그리드 & 사이드 통계 대시보드 |
 
 ---
 
-## 애니메이션 & 트랜지션
+### 1. Phone 레이아웃 (< 768px) 상세 스펙
+- **한 손 조작 최적화 (Thumb-Zone Design)**:
+  - 현장 작업자가 한 손으로 기기를 쥐고 매대를 이동할 수 있도록 상단 30%는 정보 조회(품목명, 이미지, PAR), 하단 50%는 조작부(수량 입력, 증감 버튼, 바코드 스캔, 다음 버튼)를 배치.
+- **최소 터치 영역**: 모든 터치 버튼은 최소 `48px × 48px` (장갑 착용 시에도 오입력 방지).
+- **빠른 증감 툴바**: `-1`, `+1`, `+5`, `+10` 버튼을 48px 높이로 가로 균등 배치.
+- **바코드 스캐너**: 화면 우하단 플로팅 액션 버튼(FAB) 또는 헤더 아이콘 탭 시 **Bottom Sheet(하단 모달)**로 카메라 뷰파인더 전개. 스캔 성공 시 즉시 닫히며 해당 품목으로 자동 스크롤 및 진동/비프 피드백.
+- **Sticky 푸터 바**: 화면 하단에 항상 고정되어 실사 진행률 (`14 / 25 품목`), 산출된 부족 발주량 (`총 12박스`), `발주 검토` CTA 버튼 제공.
 
-**허용 애니메이션** (Amazon은 모션을 최소화한다):
-- **색상/테두리 변환**: `transition-colors duration-100` — hover/포커스 상태 변화
-- **투명도 전환**: `transition-opacity duration-150` — 드롭다운/모달 등장
-- **캐러셀 슬라이드**: `transition-transform duration-300` — 사용자 조작 시에만 (자동 재생 시 일시정지 버튼 필수)
-- **토스트/알림**: 0.2s 페이드 — "장바구니에 추가됨" 등 결과 피드백
+### 2. Tablet 레이아웃 (≥ 768px) 상세 스펙
+- **Master-Detail 2단 분할 뷰 (Split-View)**:
+  - **좌측 패널 (40% 너비, 최소 320px)**:
+    - 상단: 카테고리 퀵 필터 칩 + 검색창.
+    - 본문: 매장 진열 순서대로 정렬된 전체 품목 리스트 (실사 완료 여부 체크마크, 실사량, 추천 발주 박스 수 뱃지 표시).
+  - **우측 패널 (60% 너비)**:
+    - 현재 선택/포커스된 품목의 대형 작업 카드.
+    - 품목 상세 정보(고화질 이미지, SKU, 바코드, 단가, 규격, 박스당 입수량, 현재 PAR Level).
+    - **대형 터치 텐키패드**: 계산기 형태의 대형 숫자 키패드(`0~9`, `Clear`, `Enter`) 및 `+1`, `+5`, `+10`, `-1` 증감 버튼.
+    - **실시간 부족분 및 발주 산출 시각화**: `[실사 4개] → [PAR 12개] = 부족 8개 (입수 6개 기준: 2박스 발주 권장)`.
+- **상시/토글형 바코드 뷰파인더**:
+  - 태블릿의 넓은 화면을 활용하여 우측 상단에 콤팩트한 카메라 뷰파인더를 항시 띄워두거나 원터치로 토글 가능.
+  - 화면 전환 없이 바코드 스캔과 좌측 목록 이동, 우측 입력이 실시간으로 연동.
+- **발주 검토 뷰 (`/audit/[id]/review`)**:
+  - 좌측: 발주 대상 품목 테이블 (품목명, 실사량, PAR, 추천박스, 최종박스 인라인 수정, 증감 사유).
+  - 우측: 발주 요약 카드 (총 품목, 총 박스, 예상 발주 금액, 지점 매니저 확인 메모, WMS 주문 전송 버튼).
 
-**금지 애니메이션**:
-- 무한 반복 글로우/펄스 (로딩 스피너 제외)
-- 배경 그라데이션 애니메이션
-- 3D transform / 패럴랙스 효과
-- 0.5초 이상 걸리는 모든 트랜지션
+---
+
+## 현장 특화 UI 컴포넌트 패턴
+
+### 1. 퀵 증감 버튼 (Quick Stepper)
+```tsx
+// Phone/Tablet 공통 증감 버튼 그룹
+<div className="grid grid-cols-4 gap-2 w-full">
+  <button className="h-12 bg-white border border-border-default rounded-lg font-bold text-base hover:bg-bg-subtle active:bg-gray-200">
+    -1
+  </button>
+  <button className="h-12 bg-white border border-border-default rounded-lg font-bold text-base hover:bg-bg-subtle active:bg-gray-200 text-status-success">
+    +1
+  </button>
+  <button className="h-12 bg-white border border-border-default rounded-lg font-bold text-base hover:bg-bg-subtle active:bg-gray-200 text-status-info">
+    +5
+  </button>
+  <button className="h-12 bg-white border border-border-default rounded-lg font-bold text-base hover:bg-bg-subtle active:bg-gray-200 text-brand-orange">
+    +10
+  </button>
+</div>
+```
+
+### 2. 고속 텐키패드 (Virtual Numpad)
+```tsx
+// 3x4 그리드 대형 텐키패드 (Phone 바텀시트 / Tablet 우측 고정)
+<div className="grid grid-cols-3 gap-2 w-full max-w-sm mx-auto">
+  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '✓'].map((key) => (
+    <button
+      key={key}
+      className="h-14 bg-white border border-border-subtle rounded-xl text-xl font-bold text-text-primary shadow-sm active:bg-action-primary-hover active:scale-95 transition-transform"
+    >
+      {key}
+    </button>
+  ))}
+</div>
+```
+
+### 3. 실시간 부족분 피드백 뱃지 (Deficit Badge)
+```tsx
+// 결품 위험 및 부족 박스 수 표시
+// 1) 충분: 녹색 (정상 재고)
+<span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-300">
+  재고 충분 (0박스)
+</span>
+
+// 2) 부족/발주필요: 주황색/빨간색 (발주 박스 수 강조)
+<span className="bg-amber-100 text-amber-900 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-300">
+  부족: 4박스 발주
+</span>
+```
+
+---
+
+## 애니메이션 & 피드백
+
+**오디오 & 햅틱 피드백 (Audio & Haptic Feedback)**:
+- **바코드 스캔 성공**: 고음 비프음(`880Hz, 80ms`) + 단일 진동(`navigator.vibrate(50)`).
+- **스캔 실패 / 미등록 바코드**: 저음 경고 버저음(`300Hz, 200ms`) + 2회 진동(`navigator.vibrate([100, 50, 100])`).
+- **수량 입력 / 증감**: 부드러운 탭 틱(Tick) 사운드.
+- **발주 제출 완료**: 성공 팡파레/차임음 + 롱 진동(`navigator.vibrate(150)`).
 
 ---
 
